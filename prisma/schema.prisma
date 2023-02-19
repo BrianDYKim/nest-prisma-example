@@ -10,21 +10,35 @@ datasource db {
 model User {
   userId  Int    @id() @default(autoincrement()) @map("USER_ID")
   name    String @default("unknown name") @map("NAME") @db.VarChar(10)
-  email   String @unique @map("EMAIL") @db.VarChar(50)
+  email   String @default(uuid()) @map("EMAIL") @db.VarChar(50)
   profile String @map("PROFILE") @db.Text
 
-  posts Post[] @relation("USER_POST_RELATION")
+  posts    Post[]    @relation("USER_POST_RELATION")
+  userInfo UserInfo? @relation("USER_DETAIL_INFO")
 
+  @@index([name], type: Hash)
   @@map("USER")
 }
 
 model Post {
   postId    Int      @id @default(autoincrement()) @map("POST_ID")
   content   String   @map("CONTENT") @db.Text
-  authorId  Int      @map("AUTHOR_ID")
+  writerId  Int      @map("WRITER_ID")
   createdAt DateTime @default(now()) @map("CREATED_AT") @db.Timestamptz()
 
-  author User @relation("USER_POST_RELATION", fields: [authorId], references: [userId])
+  author User @relation("USER_POST_RELATION", fields: [writerId], references: [userId])
 
   @@map("POST")
+}
+
+model UserInfo {
+  userId    Int      @id @default(autoincrement()) @map("USER_ID")
+  height    String   @db.Char(3) @map("HEIGHT")
+  weight    Int      @db.Integer @map("WEIGHT")
+  address   String   @db.Text @map("ADDRESS")
+  createdAt DateTime @db.Timestamptz() @default(now()) @map("CREATED_AT")
+
+  user User @relation("USER_DETAIL_INFO", fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("USER_INFO")
 }
